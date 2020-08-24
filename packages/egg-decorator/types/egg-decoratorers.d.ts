@@ -1,3 +1,3 @@
 export { validateProperty } from './validate';
-export { post } from './methods';
-export { Body } from './parameter';
+export { post, validate } from './methods';
+export { Body, required } from './parameter';

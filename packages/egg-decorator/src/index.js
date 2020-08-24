@@ -3,11 +3,13 @@ export {
 }
 from './property';
 export {
-    Body
+    Body,
+    required,
 }
 from './parameter';
 
 export {
-    post
+    post,
+    validate
 }
 from './methods';

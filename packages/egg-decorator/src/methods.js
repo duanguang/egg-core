@@ -2,7 +2,8 @@ import {
     VALIDATE_PROPERTY_METADATA_KEY,
     VALIDATE_PROPERTY,
     BODY_METADATA_KEY,
-    ResponseModel
+    ResponseModel,
+    REQUIRED_METADATA_KEY
 } from './constant';
 import 'reflect-metadata';
 
@@ -48,6 +49,32 @@ export function post(target, propertyName, descriptor) {
                         ctx.body = responseModel;
                         return;
                     }
+                }
+            }
+        }
+        return method.apply(this, arguments);
+    };
+}
+
+export function validate(
+    target,
+    propertyName,
+    descriptor
+) {
+    const method = descriptor.value;
+    descriptor.value = function () {
+        const requiredParameters = Reflect.getOwnMetadata(
+            REQUIRED_METADATA_KEY,
+            target,
+            propertyName
+        );
+        if (requiredParameters) {
+            for (const parameterIndex of requiredParameters) {
+                if (
+                    parameterIndex >= arguments.length ||
+                    arguments[parameterIndex] === undefined
+                ) {
+                    throw new Error('Missing required argument.');
                 }
             }
         }

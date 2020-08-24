@@ -1,5 +1,5 @@
 /**
- * egg-decoratorers v0.0.1
+ * egg-decoratorers v0.0.3
  * (c) 2020 duanguang
  * @license MIT
  */
@@ -44,6 +44,7 @@ var eggDecoratorer = (function (exports) {
   var VALIDATE_PROPERTY = 'validateProperty';
   var VALIDATE_PROPERTY_METADATA_KEY = Symbol('validateProperty');
   var BODY_METADATA_KEY = Symbol('Body');
+  var REQUIRED_METADATA_KEY = Symbol('required');
   var ResponseModel = function ResponseModel() {
       classCallCheck(this, ResponseModel);
 
@@ -87,6 +88,12 @@ var eggDecoratorer = (function (exports) {
       return createBodyDecorator(4)(property);
   }
 
+  function required(target, propertyKey, parameterIndex) {
+      var existingRequiredParameters = Reflect.getOwnMetadata(REQUIRED_METADATA_KEY, target, propertyKey) || [];
+      existingRequiredParameters.push(parameterIndex);
+      Reflect.defineMetadata(REQUIRED_METADATA_KEY, existingRequiredParameters, target, propertyKey);
+  }
+
   function post(target, propertyName, descriptor) {
       var method = descriptor.value;
       descriptor.value = function () {
@@ -128,8 +135,48 @@ var eggDecoratorer = (function (exports) {
       };
   }
 
+  function validate(target, propertyName, descriptor) {
+      var method = descriptor.value;
+      descriptor.value = function () {
+          var arguments$1 = arguments;
+
+          var requiredParameters = Reflect.getOwnMetadata(REQUIRED_METADATA_KEY, target, propertyName);
+          if (requiredParameters) {
+              var _iteratorNormalCompletion = true;
+              var _didIteratorError = false;
+              var _iteratorError = undefined;
+
+              try {
+                  for (var _iterator = requiredParameters[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                      var parameterIndex = _step.value;
+
+                      if (parameterIndex >= arguments$1.length || arguments$1[parameterIndex] === undefined) {
+                          throw new Error('Missing required argument.');
+                      }
+                  }
+              } catch (err) {
+                  _didIteratorError = true;
+                  _iteratorError = err;
+              } finally {
+                  try {
+                      if (!_iteratorNormalCompletion && _iterator.return) {
+                          _iterator.return();
+                      }
+                  } finally {
+                      if (_didIteratorError) {
+                          throw _iteratorError;
+                      }
+                  }
+              }
+          }
+          return method.apply(this, arguments);
+      };
+  }
+
   exports.Body = Body;
   exports.post = post;
+  exports.required = required;
+  exports.validate = validate;
   exports.validateProperty = validateProperty;
 
   return exports;

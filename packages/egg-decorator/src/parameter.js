@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import {
-    BODY_METADATA_KEY
+    BODY_METADATA_KEY,
+    REQUIRED_METADATA_KEY
 } from './constant';
 import {
     assignMetadata
@@ -22,4 +23,20 @@ const createBodyDecorator = function (paramtype) {
 };
 export function Body(property) {
     return createBodyDecorator(4)(property);
+}
+
+export function required(
+    target,
+    propertyKey,
+    parameterIndex
+) {
+    const existingRequiredParameters =
+        Reflect.getOwnMetadata(REQUIRED_METADATA_KEY, target, propertyKey) || [];
+    existingRequiredParameters.push(parameterIndex);
+    Reflect.defineMetadata(
+        REQUIRED_METADATA_KEY,
+        existingRequiredParameters,
+        target,
+        propertyKey
+    );
 }
